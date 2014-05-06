@@ -1,4 +1,4 @@
-<?
+<?php
 
 class DNServer
 {
@@ -7,7 +7,7 @@ class DNServer
     var $types;
     var $localip;
 
-    function DNServer($callback,$ip = NULL)
+    function __construct($callback,$ip = NULL)
     {
         $this->localip = $ip;
         $this->func = $callback;
@@ -34,11 +34,9 @@ class DNServer
             "IXFR" => 251,
             "*" => 255
         );
- 
-         $this->Begin();
     }
     
-    function Begin()
+    function listen()
     {
         $this->socket = socket_create(AF_INET,SOCK_DGRAM, SOL_UDP);
         if ($this->socket < 0)
@@ -57,12 +55,12 @@ class DNServer
             $len = socket_recvfrom($this->socket, $buf, 1024*4, 0, $ip, $port);
             if ($len > 0)
             {
-                $this->HandleQuery($buf,$ip,$port);        
+                $this->handleQuery($buf,$ip,$port);        
             }    
         }
     }
     
-    function HandleQuery($buf,$clientip,$clientport)
+    function handleQuery($buf,$clientip,$clientport)
     {
     
         $dominio="";
@@ -85,13 +83,13 @@ class DNServer
         $answ .= $tmp;
         $answ .= chr(192).chr(12);
         $answ .= chr(0).chr(1).chr(0).chr(1).chr(0).chr(0).chr(0).chr(60).chr(0).chr(4);
-        $answ .= $this->TransformIP($ips);
+        $answ .= $this->transformIP($ips);
 
         if (socket_sendto($this->socket,$answ, strlen($answ), 0,$clientip, $clientport) === false)
             printf("Error in socket\n");             
     }
     
-    function TransformIP($ip)
+    function transformIP($ip)
     {
         $nip="";
         foreach(explode(".",$ip) as $pip)
